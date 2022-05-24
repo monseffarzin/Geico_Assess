@@ -1,0 +1,735 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>@ViewBag.Title - Inventory Management System</title>
+    @Styles.Render("~/Content/css")
+    @Styles.Render("~/Content/site")
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/modernizr")
+    @Scripts.Render("~/bundles/jqueryval")
+    @Scripts.Render("~/bundles/modernizr")
+<style>
+
+    /*ul,
+    li,
+    span.k-link.k-menu-link{
+        padding: 0px;
+        margin: 0px;
+    }*/
+</style>
+<script>
+        function runBatch() {
+            window.open("testus:");
+        }
+        function onError(e, status) {
+            if (e.errors) {
+                var message = "\n";
+                // var message = "Please correct the records that you enter"
+                $.each(e.errors, function (key, value) {
+                    if (value.errors) {
+                        message += value.errors.join("\n");
+                    }
+                });
+                alert(message);
+            }
+        }
+        // #region Custom Validation Rules ///////////////////////////////////////////////////////////////////////////////////////////////
+        (function ($, kendo) {
+            $.extend(true, kendo.ui.validator, {
+                rules: {
+                    requiredif: function (input) {
+                        var tmp = input[0].attributes["data-val-requiredif"];
+                        if (typeof tmp != 'undefined') {
+                            var requiredifExists = input[0].attributes["data-val-requiredif"].value;
+                            var requirediffield = input[0].attributes["data-val-requiredif-field"].value;
+                            var requiredifvalues = input[0].attributes["data-val-requiredif-values"].value;
+                            var v = $("input[name=" + requirediffield + "]")[0].value
+                            var requiredifvaluesArray = requiredifvalues.split('|');
+                            var match = false;
+                            for (var i = 0; i < requiredifvaluesArray.length; i++) {
+                                if (requiredifvaluesArray[i] == v) {
+                                    match = true;
+                                    break;
+                                }
+                            }
+                            if (match) {
+                                if ((input[0].value == '') || (input[0].value == null)) {
+                                    return false;
+                                }
+                            }
+                        }
+                        return true;
+                    }
+                },
+                messages: {
+                    requiredif: function (input) {
+                        return input[0].attributes["data-val-requiredif"].value;
+                    }
+                }
+            });
+        })(jQuery, kendo);
+        // #endregion
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+    var idleTime = 0;
+    var idleInterval = null;
+    $(document).ready(function () {
+    // #region LOGOUT INACTIVITY
+        var idleInterval = setInterval(timerIncrement, 60000); // 1 minute
+        $(this).mousemove(function (e) {
+        idleTime = 0;
+        });
+        $(this).keypress(function (e) {
+        idleTime = 0;
+        });
+    // #end region LOGOUT INACTIVITY
+      $("#loginusername").keyup(function (event) {
+        if (event.keyCode === 13) {
+          $("#loginpassword").focus();
+        }
+      });
+      $("#loginpassword").keyup(function (event) {
+        if (event.keyCode === 13) {
+          $("#okloginmodal").click();
+        }
+      });
+      if ('@Session["Authenticated"]' != 'true') {
+        loginmodalstart();
+      }
+      else {
+        setMenuUserName('@Session["fullname"]');
+      }
+      makedropdown();
+        $("#menu").kendoMenu();
+        document.getElementById("menucontainer").style.display = "block";
+        document.getElementById("menucontainer").style.visibility = "visible";
+        ModalDlgState = -1;
+        modal = document.getElementById("alertboxmodal");
+
+    });
+    // #region LOGOUT INACTIVITY
+    function timerIncrement() {
+      idleTime = idleTime + 1;
+      if (idleTime > 14) { // 15 minutes
+        setSession('Authenticated', "false");
+        if (window.location.href.toLowerCase().indexOf('home') == -1) {
+          setTimeout(window.location.href = "home", 2000);
+        }
+        else {
+          setTimeout(loginmodalstart(), 2000);
+        }
+      }
+    }
+    // #end region LOGOUT INACTIVITY
+    function setSession(sessionVarName, sessionVarValue) { 
+      $.ajax({
+        type: "POST",
+        url: "/Home/setSessionVar?sessionVarValue=" + sessionVarName + '|' + sessionVarValue,
+        content: "application/json; charset=utf-8",
+        success: function (d) {
+        },
+        error: function (xhr, textStatus, errorThrown) {
+            alertbox(3, 'ERROR CALLING setSession Variable ' + sessionVarName + ' = ' + sessionVarValue + '\n' + xhr.status + '\n' + errorThrown, "Error", 5000);
+        },
+        async: true,
+        processData: false
+      });
+    }
+    function logout() {
+      $.ajax({
+        type: "POST",
+          url: "/Home/logout",
+          success: function (d) {
+            alertbox(5, 'Logout Successfuly !', "Success", 10000);
+        },
+        error: function (xhr, textStatus, errorThrown) {
+            alertbox(3, 'ERROR CALLING Logout ' + '\n' + xhr.status + '\n' + errorThrown, "Error", 5000);
+        },
+        async: true,
+        processData: false
+      });
+    }
+    function makedropdown2() {
+      var select = document.getElementById("loginusername");
+      var options = '@Session["FullnameList"]';
+
+      for (var i = 0; i < options.length; i++) {
+        var opt = options[i];
+        var el = document.createElement("option");
+        el.textContent = opt;
+        el.value = opt;
+        select.appendChild(el);
+      }
+      select.value = '@Session["LastUser"]';
+      $("#loginpassword").focus();
+      setTimeout(setpasswordfocus, 1000);
+    }
+    function makedropdown() {
+		    $.ajax({
+			    type: "POST",
+			    url: '@Url.Action("initiateUser", "Home")',
+			    cache: false
+            }).done(function (data) {
+                if (data.response == true) {
+                  var select = document.getElementById("loginusername");
+                  var options = data.data;
+
+                  for (var i = 0; i < options.length; i++) {
+                    var opt = options[i];
+                    var el = document.createElement("option");
+                    el.textContent = opt;
+                    el.value = opt;
+                    select.appendChild(el);
+                  }
+                  select.value = '@Session["LastUser"]';
+                  $("#loginpassword").focus();
+                  setTimeout(setpasswordfocus, 3000);
+                }
+                else {
+                }
+		    }).fail(function(response) {
+          console.log('Error: ' + 'initiate Home= ' + response);
+		    });
+    }
+    function setpasswordfocus(){
+      $("#loginpassword").focus();
+    }
+    $(function () {
+    });
+    function openNav() {
+        document.getElementById("myNav").style.width = "40%";
+    }
+    function closeNav() {
+        document.getElementById("myNav").style.width = "0%";
+    }
+    //* Loop through all dropdown buttons to toggle between hiding and showing its dropdown content - This allows the user to have multiple dropdowns without any conflict */
+    //var dropdown = document.getElementsByClassName("dropdown-btn");
+    //var i;
+
+    //for (i = 0; i < dropdown.length; i++) {
+    //    dropdown[i].addEventListener("click", function () {
+    //        this.classList.toggle("active");
+    //        var dropdownContent = this.nextElementSibling;
+    //        if (dropdownContent.style.display === "block") {
+    //            dropdownContent.style.display = "none";
+    //        } else {
+    //            dropdownContent.style.display = "block";
+    //        }
+    //    });
+    //}
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // #region alertbox
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //to Start the Alert Box, Selecting Mode(Success(Default=any value), Warning=2, Error=3, Info=4),
+    //Set Message, Title, Position and Show/Animate the Box
+    function alertbox(action, msg, title, alerttime) {
+        //debugger;
+        var scroll_pos = (0);
+        var scrollTop = 0;
+        $('html, body').animate({ scrollTop: (scroll_pos) }, '2000');
+        var Imagepath = "../../";            //'@Session["AppPath"]';   //
+        switch (action) {
+            case 2: //warn
+                $("#msgIcon")[0].src = Imagepath + "Images/_warn.png"
+                $("#msgIcontitle")[0].src = Imagepath + "Images/_warn.png"
+                $("#alertboxtitlerow").css({ background: '#0d005d', color: 'white', border: '4px #055e5f' });
+                $("#alertboxmsgrow").css({ background: '#fae780', color: 'Black', border: '4px #4b4002' });
+                if (title == '') { title = 'Warning'; }
+                alertboxmessage(msg, title, alerttime);
+                break;
+            case 3: //error
+                $("#msgIcon")[0].src = Imagepath + "Images/_error.png"
+                $("#msgIcontitle")[0].src = Imagepath + "Images/_error.png"
+                $("#alertboxtitlerow").css({ background: '#0d005d', color: 'white', border: '4px #055e5f' });
+                $("#alertboxmsgrow").css({ background: '#f75656', color: 'Black', border: '4px #680707' });
+                if (title == '') { title = 'Error'; }
+                alertboxmessage(msg, title, alerttime);
+                break;
+            case 4: //info
+                $("#msgIcon")[0].src = Imagepath + "Images/_info.png"
+                $("#msgIcontitle")[0].src = Imagepath + "Images/_info.png"
+                $("#alertboxtitlerow").css({ background: '#0d005d', color: 'white', border: '4px #055e5f' });
+                $("#alertboxmsgrow").css({ background: '#35f9f9', color: 'Black', border: '4px #055e5f' });
+                if (title == '') { title = 'Information'; }
+                alertboxmessage(msg, title, alerttime);
+                break;
+            case 5: //Bank Standard
+                $("#msgIcon")[0].src = Imagepath + "Images/_success.png"
+                $("#msgIcontitle")[0].src = Imagepath + "Images/_success.png"
+                $("#alertboxtitlerow").css({ background: '#0d005d', color: 'white', border: '4px #055e5f' });
+                $("#alertboxmsgrow").css({ background: 'white', color: 'black', border: '4px #055e5f' });
+                if (title == '') { title = 'Information'; }
+                alertboxmessage(msg, title, alerttime);
+                break;
+            default: //success
+                $("#msgIcon")[0].src = Imagepath + "Images/_success.png"
+                $("#msgIcontitle")[0].src = Imagepath + "Images/_success.png"
+                $("#alertboxtitlerow").css({ background: '#0d005d', color: 'white', border: '4px #055e5f' });
+                $("#alertboxmsgrow").css({ background: '#0d005d', color: 'white', border: '4px black' });
+                if (title == '') { title = 'Success'; }
+                alertboxmessage(msg, title, alerttime);
+        }
+    }
+    var alertboxCloseCall = null;
+    function alertboxShow(msg, mytime) {
+        clearTimeout(alertboxCloseCall);
+        alertboxCloseCall = null;
+        alertboxPos();
+        var ret = setwidth(msg);
+        $("#alertbox").animate({ top: '30px', width: ret + '%', left: (98 - ret) + '%' });
+        alertboxCloseCall = setTimeout(alertboxClose, mytime);
+    }
+    //Close the alert Box
+    function alertboxClose() {
+        clearTimeout(alertboxCloseCall);
+        alertboxCloseCall = null;
+        $("#alertbox").animate({ top: '-50%' });
+        setTimeout(function () { $("#alertbox").css({ visibility: 'hidden' }); }, 1000);
+    }
+    //to Initiate the Alert Box Position, start mode
+    function alertboxPos() {
+        $("#alertbox").css({ top: '30px', left: '105%' });
+        $("#alertbox").css({ visibility: 'visible' });
+    }
+    //to Set the Alert Box Message and Title, then Show the Box
+    function alertboxmessage(msg, title, mytime) {
+        $("#alertboxmiddle").text("");
+        $("#alertboxmiddle").append(msg);
+        $("#alertboxtitle")[0].innerText = title;
+        setwidth(msg);
+        alertboxShow(msg, mytime);
+    }
+
+    function setwidth(msg) {
+        var val = msg.length;
+        var ret = 30;
+        if ((200 <= val) && (val < 500)) {
+            ret = 60;
+        } else {
+            if (500 <= val) {
+                ret = 90;
+            }
+        }
+        return ret;
+    }
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // #endregion
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // #region alertbox Modal
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    var ModalDlgState = -1;
+    var modal = document.getElementById("alertboxmodal");
+
+    function fadeIn(element, duration) {
+        if (typeof duration == 'undefined') { duration = 400; }
+        var interval = 2;//ms
+        var op = 0.0;
+        var iop = 1.0;
+        var increment = (iop - op) / (duration / interval);
+        element.style.opacity = op;
+        element.style.display = "block";
+        var timer = setInterval(function () {
+            if (op > iop) {
+                op = iop;
+                clearInterval(timer);
+                element.style.display = "block";
+                element.style.opacity = iop;
+            }
+            else {
+                element.style.opacity = op;
+            }
+            op += increment;
+        }, interval);
+    }
+    function fadeOut(element, duration) {
+        if (typeof duration == 'undefined') { duration = 400; }
+        var interval = 1;//ms
+        var op = 1.0;
+        var iop = 0.0;
+        var increment = (op - iop) / (duration / interval);
+        element.style.opacity = op;
+        element.style.display = "block";
+        var timer = setInterval(function () {
+            if (op < iop) {
+                op = iop;
+                clearInterval(timer);
+                element.style.display = "none";
+            }
+            else {
+                element.style.opacity = op;
+            }
+            op -= increment;
+        }, interval);
+    }
+    function alertboxmodalclose() {
+        modaldlgclick(0);
+    }
+
+    function modaldlgclick(ModalDlgValue) {
+        ModalDlgState = ModalDlgValue;
+        closeModal();
+    }
+
+    function closeModal() {
+        waitfuncalertboxmodal = null;
+        fadeOut(modal, 20);
+    }
+      function alertboxmodalinit(msg, title, footer, OKCaption, CancelCaption) {
+        if (typeof OKCaption != 'undefined') {
+          if (OKCaption != '') {
+            elem = document.getElementById("okalertboxmodal").value = OKCaption;
+          }
+        }
+        if (typeof CancelCaption != 'undefined') {
+          if (CancelCaption != '') {
+            document.getElementById("cancelalertboxmodal").value = CancelCaption;
+          }
+        }
+        var alertboxtitle = document.getElementById("alertboxmodaltitle");
+        alertboxtitle.innerText = title;
+        var alertboxmodalmessage = document.getElementById("alertboxmodalmessage");
+        alertboxmodalmessage.innerText = msg;
+        var alertboxmodalfooter = document.getElementById("alertboxmodalfooter");
+        alertboxmodalfooter.innerText = footer;
+
+        ModalDlgState = -1;
+        fadeIn(modal, 200);
+        waitfuncalertboxmodal = true;
+        document.getElementById("cancelalertboxmodal").focus();
+    }
+    var waitfuncalertboxmodal = null;
+    var wait = function (condFunc, readyFunc, checkInterval) {
+        var checkFunc = function () {
+            if (condFunc()) {
+                readyFunc();
+            } else {
+                waitfuncalertboxmodal = setTimeout(checkFunc, checkInterval);
+            }
+        };
+        checkFunc();
+    };
+
+    function alertboxmodal(msg, ttl, ftr, OKFunction, CancelFunction, OKCaption, CancelCaption) {
+        alertboxmodalinit(msg, ttl, ftr, OKCaption, CancelCaption);
+        wait(
+            function () { return ((ModalDlgState >= 0) || (new Date().getSeconds() == 10)); },
+            function () {
+                clearTimeout(waitfuncalertboxmodal);
+                if (ModalDlgState > 0) {
+                    alertboxmodalclose();
+                    if (typeof OKFunction != 'undefined') {
+                      if (OKFunction != '') {
+                        OKFunction();
+                      }
+                    }
+                } else {
+                    alertboxmodalclose();
+                    if (typeof CancelFunction != 'undefined') {
+                      if (CancelFunction != '') {
+                        CancelFunction();
+                      }
+                    }
+                }
+            },
+            100
+        );
+        return ModalDlgState;
+    }
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // #endregion
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    function loginmodalstart() {
+        fadeIn(loginmodal, 200);
+    }
+    var loginmodalFunctionCounter = 0;
+    function loginmodalFunction(state) {
+        var username = $("#loginusername")[0].value.trim();
+        var password = $("#loginpassword")[0].value.trim();
+        if ((state==1)&&(username == "")) {
+            $("#loginmodalmsg")[0].innerText = "Username Could NOT be Empty, Please Try Again!";
+            $("#loginusername").focus();
+            return;
+        }
+        if ((state == 1) &&(password == "")) {
+            $("#loginmodalmsg")[0].innerText = "Password Could NOT be Empty, Please Try Again!";
+            $("#loginpassword").focus();
+            return;
+        }
+            var data = {};
+            data.username = username;
+            data.password = password;
+		    $.ajax({
+			    type: "POST",
+			    url: '@Url.Action("login", "Home")',
+			    data: JSON.stringify(data),
+			    contentType: "application/json",
+			    dataType: "json",
+			    cache: false
+            }).done(function (data) {
+                if (data.response == true) {
+                  fadeOut(loginmodal, 20);
+                  setMenuUserName(data.username);
+                }
+                else {
+                    loginmodalFunctionCounter++;
+                    if (loginmodalFunctionCounter >= 3) {
+                        var url = '@Url.Action("Access", "Home")';
+                        window.location.href = url;
+                    }
+                    $("#loginmodalmsg")[0].innerText = "Username or Password is INCORRECT, Please Try Again!";
+                    LoginModalDlgState = -1;
+                }
+		    }).fail(function(response) {
+          console.log('Error: ' + 'callloginHome= ' + response);
+
+		    });
+    }
+    function InstockReportConfirm() {
+        var grid = $("#headergrid").data("kendoGrid");
+        setSession('swReportWithDetail', '0');
+        alertboxmodal("Do you want Report with Details (Serials of Items)?"  //message
+            , "Report with Details (SERIALS)"  //title
+            , "Inventory Management"  //footer
+            , InstockReportWithDetail  //callback function for Yes
+            , InstockReport            //callback function for No
+            , 'Yes'
+            , 'No');
+    }
+    function InstockReportWithDetail() {
+        swReportWithDetail = 1;
+        setSession('swReportWithDetail', '1');
+        InstockReport();
+    }
+    function InstockReport() {
+        window.open('@Url.Action("InStock", "Report")');
+    }
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  function setMenuUserName(username) {
+    let res = document.getElementById('username');
+    if (typeof res != 'undefined') {
+        res.innerHTML = '<span class=\"k-link k-menu-link\">User Name: ' + username + ',   Version: ' + '@Session["AppVersion"]' + '</span>';
+    }
+  }
+  function setMousePointer(typePointer) {
+    if (typeof typePointer == 'undefined') { typePointer = "default" }
+    $("body").css("cursor", typePointer);
+  }
+
+  function loadingshow(zIndex) {
+    if (typeof zIndex != 'undefined') {
+      document.getElementById("overlay").style.zIndex = zIndex;
+    }
+    $("#overlay").css("display", "block");
+  }
+  function loadinghide() {
+    $("#overlay").css("display", "none");
+  }
+
+  function closeMenu() {
+    var menu = $("#menu").data("kendoMenu");
+    menu.close("#Operation");
+  }
+</script>
+</head>
+<body>
+    <div id="overlay" name="overlay" class="overlay" style="display:none;text-align:center;padding:20%;z-index:999999">
+        <img style="width:15%;height:15%;" src="~/Images/loading.gif" />
+    </div>
+    <div id="pageTitle" name="pageTitle" style="padding:20px 0px 0px 50px;">
+        <img style="width:46px;height:46px;float:left;" src="~/Images/logo.gif" />
+        <h1 id="pagetitle" style="color:maroon;padding-left: 60px;font-weight:600;">Inventory Management System</h1>
+    </div>
+
+    <div>
+        <div id="menubarcontainer">
+            <div id="menucontainer" style="display:none">
+                <ul id="menu" style="width:100%;">
+                    <li class="menu" id="Home" name="Home">
+                        <img src="~/Images/==Home2.png" alt="" class="menuicon"/>
+                        Home
+                        <ul>
+                            <li class="menu"><img src="~/Images/==Home2.png" alt="" class="menuicon" /><a onclick="closeMenu();loadingshow(9999)" href="@Url.Action("Index", "Home", new { TransType = 1 })">Home</a></li>
+                            <li class="menu"><img src="~/Images/==Logout1.png" alt="" class="menuicon" /><a onclick="closeMenu(); logout();loadingshow(9999)" href="@Url.Action("Index", "Home", new { TransType = 2 })">Logout</a></li>
+                        </ul>
+                    </li>
+                    <li class="menu" id="Operation" name="Operation">
+                        <img src="~/Images/==Periods1.png" alt="" class="menuicon" />
+                        Task Operations
+                        <ul>
+                            <li class="menu"><img src="~/Images/Task1.png" alt="" class="menuicon" /><a onclick="closeMenu();loadingshow(9999)" href="@Url.Action("Index", "Task", new { TransType = 1 })">Task List</a></li>
+                        </ul>
+                    </li>
+                    <li class="menu">
+                        <img src="~/Images/==Report1.png" alt="" class="menuicon" />
+                        Reports
+                        <ul class="menu">
+                            <li class="menu">
+                                <img src="~/Images/==Report3.png" alt="" class="menuicon" />
+                                In-System Report
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="menu">
+                        <img src="~/Images/==Settings1.png" alt="" class="menuicon" />
+                        Settings
+                        <ul class="menu">
+                            <li class="menu"><img src="~/Images/==User2.png" alt="" class="menuicon" />Users</li>
+                        </ul>
+                    </li>
+                    <li id="username" disabled="disabled" style="float: right;">
+                        UserName:
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div>
+    </div>
+    <main>
+        <div class="container-fluid">
+            @RenderBody()
+        </div>
+    </main>
+    <!-- #region Alert Box Mockup -->
+    <div id="alertbox"
+         style="background: #0d005d;
+                visibility: hidden;
+                width: 30%;
+                top: 0px;
+                left: 0%;
+                position: absolute;
+                color: white;
+                text-align: center;
+                padding: 4px 4px 4px 4px;
+                margin: 0px 0px 0px 0px;
+                z-index: 8888;
+                opacity: 0.96;"
+         class="alertbox">
+        <table style="width: 100%; height: 100%;">
+            <tbody>
+                <tr id="alertboxtitlerow">
+                    <td colspan="3"
+                        style=" align-content: center;
+                                padding: 0px 0px 0px 0px;
+                                margin: 0px 0px 0px 0px;
+                                font-size: 24px;
+                        ">
+                        <span>
+                            <img id="msgIcontitle" src="../../Images/_info.png" alt="Success" style="width:24px;height:24px;margin:0px 0px 5px 0px;" />
+                            <label id="alertboxtitle">
+                                My Title
+                            </label>
+                        </span>
+                        <img id="closebutton" src="../../Images/__close.png" alt="Close" OnClick="alertboxClose();"
+                             class="float-right" style="height:32px;width:32px;float:right" />
+                    </td>
+                </tr>
+                <tr id="alertboxmsgrow">
+                    <td style="text-align: center; vertical-align: middle; width: 90px;">
+                        <img id="msgIcon" src="../../Images/_info.png" alt="Success" style="width:64px;height:64px;" />
+                    </td>
+                    <td id="alertboxmiddle" colspan="2" style="font-size: 18px; padding: 10px 10px 10px 0px; vertical-align: middle;">
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div id="loginmodal"
+         style="display: none; /* Hidden by default */ position: fixed; /* Stay in place */ z-index: 9991; /* Sit on top */ padding-top: 100px; /* Location of the box */ left: 0; top: 0; width: 100%; /* Full width */ height: 100%; /* Full height */ overflow: auto; /* Enable scroll if needed */ background-color: rgb(0, 0, 0); /* Fallback color */ background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */"
+         class="alertboxmodal">
+        <div style="background-color: #fefefe; margin: auto; padding: 20px; border: 1px solid #888; width: 40%;"
+             class="alertboxmodal-content tablealertboxmodal">
+            <table style="width: 100%; height: 100%;">
+                <tbody>
+                    <tr>
+                        <td id="loginmodaltitlerow" colspan="5" style="text-align: center; padding: 0px 0px 8px 0px; font-size: 30px;font-weight:700;">
+                            <span id="loginmodaltitle" style="text-align: center">Login</span>
+                        </td>
+                    </tr>
+                    <tr>
+
+                        <td style="vertical-align: middle;padding: 0px 0px 0px 60px">
+                            User Name:
+                            <select tabindex="0" id="loginusername" name="loginusername" style="font-size: 15px;width:80%;height:50px;" class="form-control">
+                            </select>
+                            Password:
+                            <input tabindex="1" type="password" id="loginpassword" name="loginpassword" value="1" autocomplete="off" style="font-size: 25px;width: 80%;height:50px;" class="form-control" />
+                        </td>
+                        <td style="text-align: left;vertical-align:top;">
+                            <img id="msgIcon" style="width:128px;height:128px;" src="../../Images/_question.gif" alt="Success">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 5px 0px 0px 0px; font-size: 12px;">
+                            <span id="loginmodalmsg" style="padding: 0px 0px 10px 0px;color: red; font-weight: 500; font-size: 13px;"></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="5" style="text-align: right; padding: 30px 0px 0px 0px; font-size: 12px;">
+                            <span id="loginmodalfooter" style="text-align: center">Enter User Name and Password to Enter the System</span>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            <input tabindex="2" id="okloginmodal" type="button" value="Login" class="k-button ok-button k-primary" tabindex="0" onclick="loginmodalFunction(1);" />&nbsp;
+                            <input tabindex="3" tabindex="0" id="cancelloginmodal" type="button" value="Cancel" class="k-button cancel-button" onclick="loginmodalFunction(0);" />&nbsp;
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <!-- #endregion -->
+    <div id="alertboxmodal"
+         style="display: none; /* Hidden by default */ position: fixed; /* Stay in place */ z-index: 9990; /* Sit on top */ padding-top: 100px; /* Location of the box */ left: 0; top: 0; width: 100%; /* Full width */ height: 100%; /* Full height */ overflow: auto; /* Enable scroll if needed */ background-color: rgb(0, 0, 0); /* Fallback color */ background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */"
+         class="alertboxmodal">
+        <div style="background-color: #fefefe; margin: auto; padding: 20px; border: 1px solid #888; width: 40%;"
+             class="alertboxmodal-content tablealertboxmodal">
+            <table style="width: 100%; height: 100%;">
+                <tbody>
+                    <tr>
+                        <td id="alertboxmodaltitlebutton" colspan="5" style="text-align: center; padding: 0px 0px 0px 0px;">
+                            <span class="close" id="alertboxmodalclose"
+                                  style="{width:30px;height:30px;text-align:right;color: #aaaaaa;float:right;font-size:28px;font-weight:bold;}
+                                :hover,
+                                :focus {color: #000;text-decoration: none;cursor: pointer;}"
+                                  onclick="alertboxmodalclose();">
+                                &times;
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td id="alertboxmodaltitlerow" colspan="5" style="text-align: center; padding: 0px 0px 18px 0px; font-size: 30px;">
+                            <span id="alertboxmodaltitle" style="text-align: center">MY-TITLE-HERE</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: center;vertical-align:central;">
+                            <img id="msgIcon" src="../../Images/_question.gif" style="width:128px;height:128px;" alt="Question">
+                        </td>
+                        <td colspan="3" style="vertical-align: middle">
+                            <span id="alertboxmodalmessage" style="text-align: center">MY-MESSAGE-HERE</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="width:30%;vertical-align: left; text-align: center; padding: 4px 0px 0px 0px; font-size: 15px;">
+                            <span id="alertboxmodalfooter" style="text-align: center">MY-FOOTER-HERE</span>
+                        </td>
+                        <td style="text-align:right">
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            <input id="okalertboxmodal" type="button" value="OK" class="k-button ok-button" tabindex="0" onclick="modaldlgclick(1);" /> &nbsp;
+                            <input id="cancelalertboxmodal" type="button" value="Cancel" class="k-button cancel-button k-primary" onclick="modaldlgclick(0);" />&nbsp;
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <!-- #endregion -->
+    <footer class="footer text-center d-flex align-items-center">
+        <div class="container-fluid">
+            <p class="text-muted">Copyright © @DateTime.Now.Year Farzin Monsef Private Business and/or its subsidiaries or affiliates.. All Rights Reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>
+
+
+

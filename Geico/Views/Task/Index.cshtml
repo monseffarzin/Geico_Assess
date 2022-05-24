@@ -1,0 +1,319 @@
+﻿<script>
+    var indexSelectTaskRow = 0;
+    var detailTaskWinIsVisible = false;
+    var swPrintLabel = false;
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    function onWindowOpenClick(mode) {
+
+        var win = $("#inoutwindow").data("kendoWindow");
+        $("#inoutwindow").prev().find(".k-window-title").text("Inout Data");
+        win.center().open();
+        win.maximize();
+    }
+    function onWindowLabelingOpenClick() {
+        var win = $("#inoutwindowlabeling").data("kendoWindow");
+        $("#inoutwindowlabeling").prev().find(".k-window-title").text("Inout Data");
+        win.center().open();
+        win.maximize();
+    }
+    function onWinTaskFindClick() {
+        setSession('TaskFind', "true");
+        var win = $("#winTaskfind").data("kendoWindow");
+        win.center().open();
+        win.maximize();
+    }
+    function NumericIntegerFilter(control) {
+        $(control).kendoNumericTextBox({ "format": "n0", "decimals": 0 });
+    }
+
+    function data_error_handler(e) {
+        if (e.errors) {
+            var message = "Data Errors:\n";
+            $.each(e.errors, function (key, value) {
+                if ('errors' in value) {
+                    $.each(value.errors, function () {
+                        message += this + "\n";
+                    });
+                }
+            });
+            alertbox(3, message, '', 10000);
+        }
+    }
+    function integerFilter(e) {
+        e.kendoNumericTextBox({
+            decimals: 0,
+            format: "g"
+        });
+    }
+    // #endregion
+    // #region Grid Events
+    function selectRow() {
+        var row = $(event.srcElement).closest("tr");
+        var grid = $("#Taskgrid").data("kendoGrid");
+        rowselected = row;
+        grid.clearSelection();
+        grid.select(row);
+    }
+    function selectRow2(e) {
+        $("#Taskgrid").data("kendoGrid").select($(e.target).closest("tr"));
+    }
+    function onTaskChange(e) {
+        getTaskGridIndex(this.dataItem(this.select()).uid);
+        setSession('TaskCode', this.dataItem(this.select()).Code);
+        if (swPrintLabel) {
+            swPrintLabel = false;
+            setTimeout(function () { printLabel() }, 200);
+        }
+    }
+    function getTaskGridIndex(uid) {
+        var alldata = $("#Taskgrid").data("kendoGrid").dataSource.data();
+        for (let i = 0; i < alldata.length; i++) {
+            if (alldata[i].uid == uid) {
+                indexSelectTaskRow = i;
+                $("#indexTask")[0].innerText = indexSelectTaskRow;
+                $("#selectedTask")[0].innerText = alldata[i].Code;
+                return;
+            }
+        }
+    }
+    function selectTaskRow(data) {
+        if (typeof data != 'undefined') {
+            var lastRowUid = data.uid;
+            dataSelectHeaderRow = data;
+            var grid = $("#Taskgrid").data("kendoGrid");
+            var row = grid.table.find("[data-uid=" + lastRowUid + "]");
+            grid.select(row);
+            setSession('TaskCode', data.Code);
+        }
+    }
+    function getDateNowFormated() {
+        var today = new Date();
+        var dd = String(today.getDate()).padStart(2, '0');
+        var mm = String(today.getMonth() + 1).padStart(2, '0');
+        var yyyy = today.getFullYear();
+        var hou = String(today.getHours()).padStart(2, '0');
+        var min = String(today.getMinutes()).padStart(2, '0');
+        var sec = String(today.getSeconds()).padStart(2, '0');
+        var mil = String(today.getMilliseconds()).padStart(3, '0');
+        today = mm + '/' + dd + '/' + yyyy + ' ' + hou + ':' + min + ':' + sec + ':' + mil;
+        return today;
+    }
+    function onTaskEdit(e) {
+        selectRow2(e);
+        //debugger;
+        checkPriorityTasks();
+        
+        if (e.model.isNew()) {
+            e.container.find("input[name=Start]").val(getDateNowFormated());
+            e.container.find("input[name=End]").val(getDateNowFormated());
+            e.container.find("input[name=Due]").val(getDateNowFormated());
+        } else {
+            $("#DropDownStatus").data("kendoDropDownList").value(e.model.Status);
+            $("#DropDownPriority").data("kendoDropDownList").value(e.model.Priority);
+        }
+        e.model.dirty = true;
+    }
+
+    function onTaskSave(e) {
+        //debugger;
+        var dateNow = new Date();
+        var dueDate = e.container.find("input[name=Due]")[0].value;;
+        if (dueDate < dateNow) {
+            $('#taskgrid').data("kendoGrid").cancelChanges();
+            alert("ERROR! You cannot set DUE date before now.");
+            e.preventDefault();
+            return;
+        }
+        e.model.Status = e.container.find("input[name=DropDownStatus]")[0].value;
+        e.model.Priority = e.container.find("input[name=DropDownPriority]")[0].value;
+        e.model.Insert = new Date();
+        e.model.dirty = true;
+    }
+    // #endregion
+    // #region Edit DropDown Events
+    function onDDTransTypeChange(e) {
+    }
+    function onDDTransTypeSelect(e) {
+    }
+    function onDDOwnerChange(e) {
+    }
+    function onDDFromToTypeChange(e) {
+    }
+    function onTaskRequestEnd(e) {
+        if (e.type == "update") {
+        }
+    }
+    function onTaskRequestStart(e) {
+        if (e.type == "update") {
+        }
+    }
+    function onTaskDataBound() {
+        if (detailTaskWinIsVisible == false) {
+            var rowNumber = $("#indexTask")[0].innerText;
+            var data = $("#Taskgrid").data("kendoGrid").dataSource.data()[rowNumber];
+            selectTaskRow(data);
+        }
+    }
+    function onTaskDataBinding() {
+
+    }
+    function onTaskExcelExport(e) {
+        var grid = $("#headergrid").data("kendoGrid");
+        var selectedItem = grid.dataItem(grid.select());
+        var headerNo = selectedItem.Code2;
+        e.workbook.fileName = "Tasks in Document " + headerNo + ".xlsx";
+    }
+    // #endregion
+
+    // #region Custom Delete Transaction
+    var rowTaskToDelete = null;
+    function deleteTask() {
+        $("#Taskgrid").data("kendoGrid").removeRow($(rowTaskToDelete).closest("tr"));; // remove the row
+    }
+
+    function deleteTaskconfirm(e) {
+        var dataItem = $("#Taskgrid").data("kendoGrid").dataItem(e.target.closest("tr"));
+        var dataItemheader = $("#headergrid").data("kendoGrid").dataItem(e.target.closest("tr"));
+        var grid = $("#Taskgrid").data("kendoGrid");
+        rowTaskToDelete = $(e.target).closest("tr");
+        alertboxmodal("Are You Sure You Want to DELETE from the document the Selected Task (" + dataItem.Code + ")?"  //message
+            , "DELETE the Task In Document " + dataItemheader.Name
+            , "Task Management"  //footer
+            , deleteTask);    //callback function for OK
+    }
+    // #endregion
+
+    function dueDateWithToday() {
+        debuger;
+        $("#DropDownDue").value('@Session["userCounter"]');
+        var message="You can NOT make task with DUE date less than current date!\nPlease correct it"
+        alertbox(3, message, '', 10000);
+        return false
+    }
+
+
+    function checkPriorityTasks() {
+        $.ajax({
+            type: "POST",
+            url: "/Task/checkPriorityTasks",
+            success: function (d) {
+                //debugger;
+                $("#PriorityTasks")[0].innerText = d[0];
+            },
+            error: function (xhr, textStatus, errorThrown) {
+                alert("Error Getting Priority Tasks Count");
+            },
+            processData: false,
+            caches: false
+        });
+    }
+    //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+    $(document).ready(function () {
+
+    })
+</script>
+<div style="display:none">
+    &nbsp;&nbsp;&nbsp;&nbsp;<label id="selectedTask">0</label>
+    &nbsp;&nbsp;&nbsp;&nbsp;<label id="indexTask">0</label>
+    &nbsp;&nbsp;&nbsp;&nbsp;<label id="PriorityTasks">0</label>
+</div>
+<div id="example">
+    @(Html.Kendo().Grid<GeicoData.Models.Task>()
+    .Name("Taskgrid")
+    .Columns(columns =>
+    {
+        columns.Command(command => {
+            command.Custom("Edit")
+            .Text("<i class='far fa-edit'></i>")
+            .HtmlAttributes(new { @class = "btn k-grid-edit btnGrid", @styles = "width:200px;" });
+        }).HtmlAttributes(new { @class = "mybtngrid", @styles = "width:200px;" });
+        columns.Command(command =>
+        {
+            command.Custom("Delete")
+            .Text("<span class='hidden-only'></span><i class='far fa-trash-alt'></i>")
+            .HtmlAttributes(new { @class = "btn btnGrid" })
+            .Click("deleteTaskconfirm");
+        }).Hidden(!(bool)Session["IsAdmin"]);
+
+        columns.Bound(c => c.Name);
+        columns.Bound(c => c.Description)
+          .Width(700);
+        columns.Bound(c => c.Due).Format("{0:G}").Width(200);
+        columns.Bound(c => c.Start).Format("{0:G}").Width(200);
+        columns.Bound(c => c.End).Format("{0:G}").Width(200);
+        columns.ForeignKey(c => c.Priority, (System.Collections.IEnumerable)Session["Priority"], "Id", "Name").Width(200);
+        columns.ForeignKey(c => c.Status, (System.Collections.IEnumerable)Session["Status"], "Id", "Name").Width(200);
+    })
+    .Excel(excel => excel.AllPages(true))
+    .ToolBar(toolbar =>
+    {
+        toolbar.Template(@<text>
+        <button class="k-button k-button-icontext btnGrid k-grid-add"><span class='k-icon k-i-plus k-icon-28'></span>Add New Task</button>
+        <div class="floatRight k-float-right" >
+            <button class="k-button k-button-icontext btnExport k-grid-excel floatRight"><span class='k-icon k-i-excel k-icon-28 iconExport'></span></button>
+        </div>
+        </text>);
+    })
+    .ColumnMenu()
+    .Editable(editable => editable.Mode(GridEditMode.PopUp)
+      .DisplayDeleteConfirmation(false)
+      .TemplateName("_EditTask")
+      .Window(w => w.Title("Add/Edit Task")
+        .Width(600)
+        .Name("AddEditTask")
+      )
+    )
+    .Groupable(g => g.Enabled(true))
+    .ColumnMenu()
+    .Pageable(pageable => pageable
+      .Refresh(true)
+      .PageSizes(new string[] { "5", "10", "20", "50", "100", "1000", "All" })
+    )
+    .Navigatable()
+    .Reorderable(reordering => reordering.Columns(true))
+    .Selectable(selectable => selectable
+      .Mode(GridSelectionMode.Multiple)
+      .Type(GridSelectionType.Row))
+    .Sortable(sortable => { sortable.SortMode(GridSortMode.SingleColumn); })
+    .Filterable(f => f.Operators(
+      o => o.ForString(
+        s => s.Clear()
+          .Contains("Contains")
+          .DoesNotContain("Does not contain")
+          .IsEqualTo("Is equal to")
+          .IsNotEqualTo("Is not equal to")
+          .StartsWith("Starts with")
+          .EndsWith("Ends with")
+        )
+    ))
+
+    .Resizable(resize => resize.Columns(true))
+    .Events(events => {
+        events.ExcelExport("onTaskExcelExport");
+        events.Change("onTaskChange");
+        events.Edit("onTaskEdit");
+        events.Save("onTaskSave");
+        events.DataBound("onTaskDataBound");
+        events.DataBinding("onTaskDataBinding");
+    })
+
+    .DataSource(dataSource => dataSource
+        .Ajax()
+        .PageSize(5)
+        .Events(e => e
+          .RequestStart("onTaskRequestStart")
+          .RequestEnd("onTaskRequestEnd")
+        )
+        //.Aggregates(aggregates =>
+        //{
+        //    aggregates.Add(p => p.Priority).Count();
+        //})
+        .Model(model => model.Id(p => p.Id))
+        .Read(read => read.Action("Tasks_Read", "Task"))
+        .Create(create => create.Action("Tasks_Create", "Task"))
+        .Update(update => update.Action("Tasks_Update", "Task"))
+        .Destroy(destroy => destroy.Action("Tasks_Destroy", "Task"))
+    )
+)
+

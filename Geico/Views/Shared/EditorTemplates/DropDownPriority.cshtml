@@ -1,0 +1,37 @@
+@model object
+@using GeicoData.Models
+<script type="text/javascript">
+    function onChangePriority() {
+        var v = $("#DropDownPriority").data("kendoDropDownList").value();
+        var l = '@Session["priorityHighLimit"]';
+        var c = $("#PriorityTasks")[0].innerText;
+        var i = '@Session["priorityHighId"]';
+        if ((i === v) && (c > l) ) {
+            alert('We already have ' + c + ' HIGH priority Tasks,Which is over our limit of '+ l +', Please Change it');
+        }
+
+    }
+</script>
+
+@(Html.Kendo().DropDownListFor(m => m)
+        .Name("DropDownPriority")
+        .OptionLabel("- Select Priority -")
+        .DataTextField("Name")
+        .DataValueField("Id")
+        .HtmlAttributes(new { style = "width:100%;", @class = "update-disabled" })
+        //.Value(@(if (Model != null)? Model.TransType : ""))
+        .BindTo((System.Collections.IEnumerable)Session["Priority"])
+        .Events(e =>
+        {
+            e
+            .Change("onChangePriority")
+            //.Select("onDDOwnerSelect")
+
+            //.Open("onDDTransactionTypeOpen")
+            //.Close("onDDTransactionTypeClose")
+            //.DataBound("onDDTransactionTypeDataBound")
+            //.Filtering("onDDTransactionTypeFiltering")
+            ;
+        })
+ )
+

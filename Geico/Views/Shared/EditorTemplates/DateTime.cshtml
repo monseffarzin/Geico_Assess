@@ -1,0 +1,5 @@
+@model DateTime?
+
+@(Html.Kendo().DateTimePickerFor(m => m)
+  .HtmlAttributes(new { @class = "form-control datepicker" });
+  )

@@ -1,0 +1,51 @@
+﻿/*.datapersian {
+  background-color: #FEEBE3 !important;
+}
+*/
+/*.menu {*/
+  /*  padding-left: 200px;
+  padding-right: 200px;*/
+  /*margin-left: 200px;
+  margin-right: 200px;
+}*/
+
+/*span {
+  width: 100%;
+  padding: 0px;
+  margin: 0px;*/
+  /*border: 2px solid blue;*/
+  /*border-radius: 4px;
+  border: 15px solid green;
+}*/
+/*span.k-textbox {
+  width: 100%;
+  padding: -20px -20px -20px -20px !important;
+  margin: -20px -20px -20px -20px !important;*/
+  /*border: 20px solid red;*/
+  /*background-color: green;
+  border-radius: 4px;
+}*/
+
+/*input.k-input {
+  width: 100%;
+  padding: 0px !important;
+  margin: 0px !important;
+  border: 20px solid red;
+  background-color: green;
+  border-radius: 4px;
+}*/
+/*#Date1{
+  background-color:red;
+}*/
+
+/*input.pdp-el{
+  margin-left: 10px;
+  background-color:yellow;
+}*/
+/*.k-widget.k-textbox.form-control*/
+.floatRight {
+  float: right;
+}
+span.k-dropdown-wrap {
+  background-color: maroon;
+}

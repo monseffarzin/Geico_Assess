@@ -1,0 +1,23 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>@ViewBag.Title - Inventory Management System</title>
+  <link href="@Url.Content("~/Content/bootstrap.min.css")" rel="stylesheet" type="text/css" />
+  <link href="@Url.Content("~/Content/Site.css")" rel="stylesheet" type="text/css" />
+  @Styles.Render("~/Content/css")
+  @Styles.Render("~/Content/site")
+  @Scripts.Render("~/bundles/jquery")
+</head>
+<body>
+  <div id="pageTitle" name="pageTitle" style="padding:0px 0px 30px 50px;">
+    <img style="width:100px;height:100px;float:left;" src="~/Images/report.gif" />
+    <h1 id="pagetitle" style="padding-top: 22px; color: maroon; padding-left: 60px; font-weight: 600;">Inventory Management System</h1>
+  </div>
+  <main>
+    <div class="container-fluid">
+      @RenderBody()
+    </div>
+  </main>
+</body>
+</html>

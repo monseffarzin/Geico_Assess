@@ -1,0 +1,27 @@
+@model object
+@using GeicoData.Models
+
+@(Html.Kendo().DropDownListFor(m => m)
+        .Name("DropDownStatus")
+        .OptionLabel("- Select Status -")
+        .DataTextField("Name")
+        .DataValueField("Id")
+        .HtmlAttributes(new { style = "width:100%;", @class = "update-disabled" })
+        //.Value(@(if (Model != null)? Model.TransType : ""))
+        .BindTo((System.Collections.IEnumerable)Session["Status"])
+ //.Events(e =>
+ //{
+ //    e
+ //    .Change("onDDOwnerChange")
+ //    //.Select("onDDOwnerSelect")
+
+ //    //.Open("onDDTransactionTypeOpen")
+ //    //.Close("onDDTransactionTypeClose")
+ //    //.DataBound("onDDTransactionTypeDataBound")
+ //    //.Filtering("onDDTransactionTypeFiltering")
+ //    ;
+ //})
+ )
+<script type="text/javascript">
+
+</script>

@@ -1,0 +1,45 @@
+@model double?
+
+@(Html.Kendo().NumericTextBoxFor(m => m)
+            .Format("###,###,###,###,###,###,###,###,###.##")
+            .HtmlAttributes(new { style = "width: 100%;" })
+            .Spinners(false)
+            )
+@*<div class="k-content k-rtl">*@
+@*@(Html.Kendo().MaskedTextBoxFor(m => m)
+        .Mask("######,###,###,###,###,###,###,###") // Set the mask value of the MaskedTextBox.
+        .HtmlAttributes(new { style = "width:100%;text-align: right;" })  /*  , @class = "k-rtl"  */
+    )*@
+@*</div>*@
+
+
+@*@Html.TextBoxFor(model => model, "{0:c}", //"{0:N2}0",
+    new { style = "border-color: green; ", @class= "k-textbox" })*@
+@*maxlength = 10,*@
+
+@*@{
+        IFormatProvider formatProvider =
+            new System.Globalization.CultureInfo("en-US");
+        <span class="currency">String.toString(@Model, "C", formatProvider)</span>
+    }*@
+@*@Html.EditorFor(m => m)*@
+
+@*<div class="k-rtl">
+        @(Html.Kendo().MaskedTextBoxFor(m => m)
+            .Mask("###")
+            .HtmlAttributes(new { style = "width: 100%;text-align:right"})
+        )
+    </div>*@
+@*@Html.TextBoxFor(m => m)*@
+@*@Html.DisplayFor(m=>m)*@
+@*@Html.Editor(m =>m)*@
+@*@Html.EditorFor(m => m)*@
+@*@(Html.Kendo().NumericTextBoxFor(m => m)
+            .Format("#.00")
+            .HtmlAttributes(new { style = "width: 100%"})
+    )*@
+@*@(Html.Kendo().NumericTextBoxFor(m => m)
+            .HtmlAttributes(new { style = "width:100%" })
+    )*@
+
+

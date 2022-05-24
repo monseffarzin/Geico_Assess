@@ -1,0 +1,11 @@
+@model DateTime?
+@{
+  var today = DateTime.Now.ToString("MM-dd-yyyy");
+}
+<script>
+
+</script>
+@(Html.Kendo().DateTimePickerFor(m => m)
+      .Min(@today)
+      .HtmlAttributes(new {  @class = "form-control datepicker" })
+)

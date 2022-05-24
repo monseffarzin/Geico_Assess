@@ -1,0 +1,358 @@
+﻿@using System.Web
+
+@{
+    ViewBag.Title = "Users List";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<script id="templateHdr" type="text/kendo-tmpl">
+    #if(TransType == '1')
+    {#
+    <div class="row">
+        <div class="col-md-6 offset-md-3 row">
+            test1
+        </div>
+    </div>
+    #}#
+
+    #if(TransType == '2')
+    {#
+    <div class="row">
+        <div class="col-md-6 offset-md-3 row">
+            test2
+        </div>
+    </div>
+    #}#
+</script>
+
+<script>
+    var indexSelectUserRow = 0;
+    var detailUserWinIsVisible = false;
+    var swPrintLabel = false;
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    function onWindowOpenClick(mode) {
+
+        var win = $("#inoutwindow").data("kendoWindow");
+        $("#inoutwindow").prev().find(".k-window-title").text("Inout Data");
+        win.center().open();
+        win.maximize();
+    }
+    function onWindowLabelingOpenClick() {
+        var win = $("#inoutwindowlabeling").data("kendoWindow");
+        $("#inoutwindowlabeling").prev().find(".k-window-title").text("Inout Data");
+        win.center().open();
+        win.maximize();
+    }
+    function onWinUserFindClick() {
+        setSession('UserFind', "true");
+        var win = $("#winuserfind").data("kendoWindow");
+        win.center().open();
+        win.maximize();
+    }
+    function NumericIntegerFilter(control) {
+        $(control).kendoNumericTextBox({ "format": "n0", "decimals": 0 });
+    }
+
+    function data_error_handler(e) {
+        if (e.errors) {
+            var message = "Data Errors:\n";
+            $.each(e.errors, function (key, value) {
+                if ('errors' in value) {
+                    $.each(value.errors, function () {
+                        message += this + "\n";
+                    });
+                }
+            });
+            alertbox(3, message, '', 10000);
+        }
+    }
+    function integerFilter(e) {
+        e.kendoNumericTextBox({
+            decimals: 0,
+            format: "g"
+        });
+    }
+    // #endregion
+    // #region Grid Events
+    function selectRow() {
+        var row = $(event.srcElement).closest("tr");
+        var grid = $("#usergrid").data("kendoGrid");
+        rowselected = row;
+        grid.clearSelection();
+        grid.select(row);
+    }
+    function selectRow2(e) {
+        $("#usergrid").data("kendoGrid").select($(e.target).closest("tr"));
+    }
+    function onUserChange(e) {
+        getUserGridIndex(this.dataItem(this.select()).uid);
+        setSession('UserCode', this.dataItem(this.select()).Code);
+        if (swPrintLabel) {
+            swPrintLabel = false;
+            setTimeout(function () { printLabel() }, 200);
+        }
+    }
+    function getUserGridIndex(uid) {
+        var alldata = $("#usergrid").data("kendoGrid").dataSource.data();
+        for (let i = 0; i < alldata.length; i++) {
+            if (alldata[i].uid == uid) {
+                indexSelectUserRow = i;
+                $("#indexUser")[0].innerText = indexSelectUserRow;
+                $("#selectedUser")[0].innerText = alldata[i].Code;
+                return;
+            }
+        }
+    }
+    function selectUserRow(data) {
+        if (typeof data != 'undefined') {
+            var lastRowUid = data.uid;
+            dataSelectHeaderRow = data;
+            var grid = $("#usergrid").data("kendoGrid");
+            var row = grid.table.find("[data-uid=" + lastRowUid + "]");
+            grid.select(row);
+            setSession('UserCode', data.Code);
+        }
+    }
+    function getDateNowFormated() {
+        var today = new Date();
+        var dd = String(today.getDate()).padStart(2, '0');
+        var mm = String(today.getMonth() + 1).padStart(2, '0');
+        var yyyy = today.getFullYear();
+        var hou = String(today.getHours()).padStart(2, '0');
+        var min = String(today.getMinutes()).padStart(2, '0');
+        var sec = String(today.getSeconds()).padStart(2, '0');
+        var mil = String(today.getMilliseconds()).padStart(3, '0');
+        today = mm + '/' + dd + '/' + yyyy + ' ' + hou + ':' + min + ':' + sec + ':' + mil;
+        return today;
+    }
+    function onUserEdit(e) {
+        selectRow2(e);
+
+        if (e.model.isNew()) {
+            e.container.find("input[name=id_export]").val(getDateNowFormated());
+        } else {
+            //$("#DropDownOrderReason").data("kendoDropDownList").value(e.model.OrderFor);
+            //$("#DropDownReason").data("kendoDropDownList").value(e.model.Babat);
+            //$("#DropDownRequester").data("kendoDropDownList").value(e.model.DarkhastKonande);
+            //$("#DropDownUserFromToType").data("kendoDropDownList").value(e.model.FromToType);
+            //$("#DropDownInventory").data("kendoDropDownList").value(e.model.Anbar);
+            //$("#DropDownUnit").data("kendoDropDownList").value(e.model.Unit);
+
+        }
+        e.model.dirty = true;
+    }
+
+    function onUserSave(e) {
+        //e.model.OrderFor = e.container.find("input[name=DropDownOrderReason]")[0].value;
+        //e.model.Babat = e.container.find("input[name=DropDownReason]")[0].value;
+        //e.model.DarkhastKonande = e.container.find("input[name=DropDownRequester]")[0].value;
+        //e.model.FromToType = e.container.find("input[name=DropDownUserFromToType]")[0].value;
+        //e.model.Anbar = e.container.find("input[name=DropDownInventory]")[0].value;
+        //e.model.Unit = e.container.find("input[name=DropDownUnit]")[0].value;
+        //e.model.id_export = new Date();
+        //e.model.dirty = true;
+    }
+    // #endregion
+    // #region Edit DropDown Events
+    function onDDTransTypeChange(e) {
+    }
+    function onDDTransTypeSelect(e) {
+    }
+    function onDDOwnerChange(e) {
+    }
+    function onDDFromToTypeChange(e) {
+    }
+    function onUserRequestEnd(e) {
+        if (e.type == "update") {
+        }
+    }
+    function onUserRequestStart(e) {
+        if (e.type == "update") {
+        }
+    }
+    function onUserDataBound() {
+        if (detailUserWinIsVisible == false) {
+            var rowNumber = $("#indexUser")[0].innerText;
+            var data = $("#usergrid").data("kendoGrid").dataSource.data()[rowNumber];
+            selectUserRow(data);
+        }
+    }
+    function onUserDataBinding() {
+
+    }
+    var test1val = 0;
+    function test1() {
+        test1val++;
+        alertbox((test1val % 5) + 1, 'Record UPDATED Successfuly!', '', 5000)
+    }
+    // #endregion
+
+
+    // #region Custom Delete Transaction
+    var rowUserToDelete = null;
+    function deleteUser() {
+        $("#usergrid").data("kendoGrid").removeRow($(rowUserToDelete).closest("tr"));; // remove the row
+
+    }
+
+    function deleteuserconfirm(e) {
+        var grid = $("#usergrid").data("kendoGrid");
+        rowUserToDelete = $(e.target).closest("tr");
+        alertboxmodal("Are You Sure You Want to DELETE the Selected Transaction?"  //message
+            , "DELETE the User"  //title
+            , "Inventory Management"  //footer
+            , deleteUser);    //callback function for OK
+    }
+    // #endregion
+    //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+    function onMenuSelect(e) {
+        this.element.find(".k-state-selected").removeClass('k-state-selected');
+        $(e.item).addClass('k-state-selected');
+    }
+    function printLabel() {
+        $.ajax({
+            type: "POST",
+            url: "/Print/printLabel",
+            success: function (d) {
+                if (d.response == true) {
+                    loadinghide();
+
+                    alertbox(5, "Label Printed Successfuly!", "Information", 5000)
+                }
+                else {
+                    loadinghide();
+                    alertbox(2, "Error in Label Print", "Error", 5000)
+                }
+            },
+            error: function (xhr, textStatus, errorThrown) {
+                loadinghide();
+                alertbox(3, 'ERROR CALLING Label Print' + '\n' + xhr.status + '\n' + errorThrown, "Error", 5000)
+            },
+            //async: true,
+            processData: false,
+            caches: false
+        });
+    }
+    function printLabelPrepare() {
+        loadingshow(9999);
+        swPrintLabel = true;
+    }
+
+    $(document).ready(function () {
+
+    })
+    function onUser_error_handler(e) {
+        //debugger;
+        console.log("Errors onUser_error_handler:");
+        console.log(e);
+        alertbox(3, 'ERROR CALLING:' + '\n' + e.xhr.responseText, "Error", 5000)
+    }
+</script>
+
+<div style="display:none">
+    &nbsp;&nbsp;&nbsp;&nbsp;<label id="selectedUser">0</label>
+    &nbsp;&nbsp;&nbsp;&nbsp;<label id="indexUser">0</label>
+</div>
+<div id="div_user">
+
+    @(Html.Kendo().Grid<GeicoData.Models.User>()
+    .Name("usergrid")
+    .Columns(columns =>
+    {
+        columns.Command(command => {
+            command.Custom("Edit")
+            .Text("<i class='far fa-edit'></i>")
+            .HtmlAttributes(new { @class = "btn k-grid-edit btnGrid", @styles = "width:200px;" });
+        }).HtmlAttributes(new { @class = "mybtngrid", @styles = "width:200px;" }).Width(30);
+        columns.Command(command =>
+        {
+            command.Custom("Delete")
+            .Text("<span class='hidden-only'></span><i class='far fa-trash-alt'></i>")
+            .HtmlAttributes(new { @class = "btn btnGrid" })
+            .Click("deleteuserconfirm");
+        }).Hidden(!(bool)Session["IsAdmin"]).Width(30);
+
+        columns.Bound(c => c.Id);
+        columns.Bound(c => c.FullName);
+        columns.Bound(c => c.USERNAME).Hidden(!(bool)Session["IsAdmin"]);
+        columns.Bound(c => c.pass);
+        columns.Bound(c => c.typeno).Hidden(!(bool)Session["IsAdmin"]);
+
+    })
+    .Excel(excel => excel.AllPages(true))
+    .ToolBar(toolbar =>
+    {
+    toolbar.Template(@<text>
+        <div class="toolbar">
+            <button id = "WindowOpen"class="btn k-button btnGrid" onclick="onWindowOpenClick();">
+            <span class='k-icon k-i-plus k-icon-28'></span>&nbsp;Add Users
+            </button>
+        </div>
+        <div class="floatRight k-float-right" >
+            &nbsp;
+            <button class="k-button k-button-icontext btnExport k-grid-excel floatRight"><span class='k-icon k-i-excel k-icon-28 iconExport'></span></button>
+        </div>
+        </text>);
+    })
+    .ColumnMenu()
+    .Editable(editable => editable.Mode(GridEditMode.PopUp)
+      .DisplayDeleteConfirmation(false)
+      //.TemplateName("_EditUser")
+      .Window(w => w.Title("Add/Edit User")
+        .Width(1300)
+        .Name("AddEditUser")
+      )
+    )
+    .Groupable(g => g.Enabled(true))
+    .ColumnMenu()
+    .Pageable(pageable => pageable
+      .Refresh(true)
+      .PageSizes(new string[] { "5", "10", "20", "50", "100", "1000", "All" })
+    )
+    .Navigatable()
+    .Reorderable(reordering => reordering.Columns(true))
+    .Selectable(selectable => selectable
+      .Mode(GridSelectionMode.Multiple)
+      .Type(GridSelectionType.Row))
+    .Sortable(sortable => { sortable.SortMode(GridSortMode.SingleColumn); })
+    .Filterable(f => f.Operators(
+      o => o.ForString(
+        s => s.Clear()
+          .Contains("Contains")
+          .DoesNotContain("Does not contain")
+          .IsEqualTo("Is equal to")
+          .IsNotEqualTo("Is not equal to")
+          .StartsWith("Starts with")
+          .EndsWith("Ends with")
+        )
+    ))
+
+    .Resizable(resize => resize.Columns(true))
+    .Events(events => {
+        events.Change("onUserChange");
+        events.Edit("onUserEdit");
+        events.Save("onUserSave");
+        events.DataBound("onUserDataBound");
+        events.DataBinding("onUserDataBinding");
+    })
+
+    .DataSource(dataSource => dataSource
+        .Ajax()
+        .PageSize(5)
+        .Events(e => e
+          .Error("onUser_error_handler")
+          .RequestStart("onUserRequestStart")
+          .RequestEnd("onUserRequestEnd")
+        )
+        .Aggregates(aggregates =>
+        {
+            aggregates.Add(p => p.Id).Count();
+        })
+        .Model(model => model.Id(p => p.Id))
+        .Read(read => read.Action("Users_Read", "User"))
+        .Create(create => create.Action("Users_Create", "User"))
+        .Update(update => update.Action("Users_Update", "User"))
+        .Destroy(destroy => destroy.Action("Users_Destroy", "User"))
+    )
+)
+</div>

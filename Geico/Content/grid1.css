@@ -1,0 +1,400 @@
+﻿/*=======================================================================================*/
+:root {
+  --FanDeepDark: #076744; /*#450000;*/ /*deep dark Purple*/
+  --FanXLightColor: white;
+  --FanMediumDark: #59826b; /*#450000;*/ /*medium dark Purple*/
+  /*--FanLightColor: #f7e3e3*/
+  --FanLightColorExport: #d9d0d0; /*#e8e2e2*/ /*light Purple*/
+  --FanLightColor: #e8ebe2; /*#e8e2e2*/ /*light Purple*/
+  --FanLightColor2: #e8eee0;
+  --FanLightColor3: #ccf5f1; /*#e8e2e2*/ /*light Purple*/
+  --FanLightColor4: #bcf3b2; /*#e8e2e2*/ /*light Purple*/
+  --FanSelectColor: #efc317; /*#e8e2e2*/ /*light Purple*/
+  outline-offset: #e9f8f3
+  /*--FanLightColor2: #d0b9b9;*/
+}
+/*=======================================================================================*/
+/* The Modal (background) */
+.alertboxmodal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 9000; /* Sit on top */
+  padding-top: 100px; /* Location of the box */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0,0,0); /* Fallback color */
+  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+.tablealertboxmodal {
+  animation: NeonLight 6s infinite;
+}
+
+.alertbox {
+  border: solid 1px #999999;
+  animation: NeonLight 6s infinite;
+}
+
+@keyframes NeonLight {
+  0% {
+    box-shadow: 0 0 5px #444444, 0 0 10px #444444;
+    transition: box-shadow 2s;
+  }
+
+  50% {
+    box-shadow: 0 0 20px #444444, 0 0 60px #444444;
+    transition: box-shadow 2s;
+  }
+
+  100% {
+    box-shadow: 0 0 5px #444444, 0 0 10px #444444;
+    transition: box-shadow 2s;
+  }
+}
+/* Modal Content */
+.alertboxmodal-content {
+  background-color: #fefefe;
+  margin: auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 40%;
+}
+
+/*=======================================================================================*/
+.k-tooltip {
+  color: var(--FanXLightColor) !important;
+  background-color: var(--FanDeepDark) !important;
+  border-color: lightgray !important;
+  border-width: 1px !important;
+  border-radius: 3px !important;
+  box-shadow: rgba(0, 0, 0, 0.5) 0 4px 20px;
+}
+
+.k-grid > table > tbody > tr > td:hover {
+  color: red !important;
+}
+
+.k-grid > table > tbody > tr.k-state-selected > td {
+  /*color: var(--FanXLightColor) !important;*/
+  color: var(--FanSelectColor) !important;
+  background-color: var(--FanDeepDark) !important;
+}
+
+.k-pager-wrap .k-link, .k-pager-wrap .k-pager-nav {
+  color: var(--FanDeepDark) !important;
+}
+
+.k-pager-numbers .k-state-selected, .k-pager-numbers .k-state-selected {
+  background-color: var(--FanDeepDark) !important;
+  color: var(--FanXLightColor) !important;
+}
+
+.k-pager-sizes-custom .k-list .k-state-selected {
+  background: var(--FanDeepDark) !important;
+  color: var(--FanXLightColor) !important;
+  border: 1px solid var(--FanDeepDark) !important;
+}
+
+li:hover, li.k-item:hover {
+  background-color: var(--FanDeepDark) !important;
+  color: var(--FanXLightColor) !important;
+}
+/*li*/
+/*li.k-item*/ /*{
+    background-color: var(--FanDeepDark) !important;
+    color: var(--FanXLightColor) !important;
+}*/
+.btnGrid {
+  background-color: var(--FanDeepDark) !important;
+  color: var(--FanXLightColor) !important;
+  border-radius: 5px;
+  /*height: 30px;*/
+}
+
+.btnExport {
+  background-color: var(--FanLightColorExport) !important;
+  color: var(--FanDeepDark) !important;
+  border-radius: 5px;
+  width: 24px !important;
+  height: 38px !important;
+  margin: 0px !important;
+  padding: 0px !important;
+}
+.iconExport {
+  background-color: var(--FanLightColor2) !important;
+  color: var(--FanDeepDark) !important;
+/*  width: 24px !important;
+  height: 48px !important;*/
+  margin: 0px !important;
+  padding: 0px !important;
+}
+.k-window-titlebar {
+  background-color: var(--FanDeepDark) !important;
+  color: var(--FanXLightColor) !important;
+}
+
+.k-window {
+  z-index: 7777 !important;
+  animation: NeonLight 6s infinite;
+}
+
+
+.k-primary {
+  Background-color: var(--FanDeepDark) !important;
+  color: var(--FanXLightColor) !important;
+}
+
+  .k-primary:hover {
+    transform: scale(1.05);
+  }
+
+.k-list {
+  color: var(--FanDeepDark) !important;
+}
+
+.k-grid-cancel {
+  color: var(--FanDeepDark) !important;
+}
+
+  .k-grid-cancel:hover {
+    transform: scale(1.05);
+  }
+
+th {
+  font-weight: 700;
+}
+
+  th:hover {
+    Background-color: var(--FanMediumDark);
+    color: var(--FanXLightColor) !important;
+    text-decoration: underline;
+  }
+/*@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*/
+
+.k-list-optionlabel.k-state-selected {
+  color: var(--FanXLightColor) !important;
+  background: var(--FanMediumDark) !important;
+}
+
+.k-list,
+.k-list .k-state-selected,
+.options li:hover {
+  /*color: var(--FanDeepDark) !important;*/
+  background: var(--FanMediumDark) !important;
+  color: var(--FanSelectColor) !important;
+}
+
+#headergrid tr.k-alt
+/*,#inoutpackinitialgrid tr.k-alt*/
+/*,#Inoutcontrolledpackgrid tr.k-alt*/
+,#inoutinitialgrid tr.k-alt
+,#Inoutcontrolledgrid tr.k-alt 
+{
+  background: var(--FanLightColor) !important;
+}
+#goodgrid tr.k-alt {
+  background: var(--FanLightColor2) !important;
+}
+#partinoutpackinitialgrid tr.k-alt, #inoutpackinitialgrid tr.k-alt, #CloseControlledPack tr.k-alt {
+  background: var(--FanLightColor3) !important;
+}
+
+/*@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@*/
+.k-link.k-menu-link {
+  padding-left: 40px !important;
+  padding-right: 40px !important;
+}
+
+.k-menu .k-state-hover > .k-link,
+.k-link > hover {
+  background-color: var(--FanDeepDark) !important;
+  color: var(--FanXLightColor) !important;
+}
+
+.k-menu .k-link,
+.k-menu,
+.k-menu .k-item,
+/*.k-menu-link,*/
+/*span.k-link,*/
+/*span.k-link.k-menu-link,*/
+div.k-filter-menu-container,
+div.k-filter-help-text,
+span.k-input, span.k-icon.k-i-arrow-60-down, span.k-select,
+a.k-link.k-pager-nav,
+span.k-icon.k-i-arrow-60-right, span.k-icon.k-i-arrow-60-left,
+span.k-icon.k-i-arrow-end-left, span.k-icon.k-i-arrow-end-right,
+option,
+select,
+ul,
+li {
+  background-color: var(--FanLightColor) !important;
+  color: var(--FanDeepDark) !important;
+}
+
+ul {
+  padding: 0px;
+  margin: 0px;
+  /*height: 32px;*/
+}
+
+/*.k-menu > .k-item {
+  background-color: var(--FanLightColor) !important;
+  color: var(--FanDeepDark) !important;
+}*/
+
+li {
+  padding: 1px !important;
+}
+
+
+
+/*.k-menu{
+    color: var(--FanDeepDark) !important;
+}
+.k-menu > .k-link .k-state-selected {
+    background: green !important;
+    color: red !important;
+}
+.k-menu.k-state-hover > .k-link {
+    background: lightblue !important;
+}*/
+
+/*Empty checkbox*/
+.k-checkbox {
+  background-color: green !important;
+}
+
+  .k-checkbox:checked {
+    background-color: green !important;
+  }
+
+    /*Checked checkbox*/
+    /*.k-checkbox:checked + .k-checkbox-label:before {
+    background-color: red !important;
+    color: white !important;
+}
+.k-checkbox-label::before {
+    background-color: #222232 !important;
+}
+.k-menu > .k-link > .k-checkbox:checked  {
+    background-color: red !important;
+    border-color: red !important;
+}*/
+
+
+    /*Checked checkbox*/
+    .k-checkbox:checked + .k-checkbox-label:before {
+      background-color: red !important;
+      color: white !important;
+    }
+
+.k-checkbox-label::before {
+  background-color: #222232 !important;
+}
+
+.k-menu > .k-link > .k-checkbox:checked {
+  background-color: red !important;
+  border-color: red !important;
+}
+
+.k-grid thead a.k-state-active {
+  background-color: var(--FanLightColor) !important;
+}
+
+.divcontainer {
+  /*width: 80%;*/
+  padding: 20px;
+  margin: 20px;
+  height: 600px;
+  /*width: 100%;*/
+  background-color: white;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+
+.Tab1InitialTitle {
+  color: var(--FanDeepDark) !important;
+  font-size: 2em;
+  font-weight: 600;
+}
+
+.Tab1InitialRegister {
+  background-color: var(--FanDeepDark) !important;
+  color: var(--FanXLightColor) !important;
+  float: right;
+  border-radius: 5px;
+  /*margin: 0px 10px 0px 10px;*/
+  /*padding: 0px 10px 0px 10px;*/
+  /*  height: 24px;
+  width: 24px;*/
+  /*background-image: url("~/Images/-gear.png");*/
+  /*background-position: 0 0px;*/
+}
+
+#Register {
+  margin: 0px 10px 0px 0px;
+}
+
+span.k-link{
+  background-color: var(--FanLightColor) !important;
+  color: var(--FanDeepDark) !important;
+}
+
+.k-tabstrip-items .k-state-active{
+  background-color: var(--FanDeepDark) !important;
+  color: var(--FanXLightColor) !important;
+}
+
+#inoutwindow {
+  width: 80%;
+  height: 80%;
+}
+
+#inoutpackinitialgrid,
+#inoutpackpartinitialgrid,
+#Inoutcontrolledpackgrid,
+#tabstripinout {
+  width: 99%;
+  /*height: 80%;*/
+}
+
+/*div#tabstripinout.k.content {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border-width: 0;
+  background-color: red;
+}*/
+
+/*#tabstripinout {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border-width: 0;
+}
+  */
+#tabstripinout-parent,
+#tabstripinout {
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0;
+  padding: 0;
+  border-width: 0;
+}
+
+
+nopaddingmargin {
+  margin: 100px !important;
+  padding: 0 !important;
+}
+
+/* Stop Disable Any TEXTBOX SELECTION --------------- */
+.disable-select {
+  user-select: none; /* supported by Chrome and Opera */
+  -webkit-user-select: none; /* Safari */
+  -khtml-user-select: none; /* Konqueror HTML */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* Internet Explorer/Edge */
+}
